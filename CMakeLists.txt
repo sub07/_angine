@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.15)
+project(Angine C)
+
+add_subdirectory(glfw)
+add_subdirectory(utils)
+add_subdirectory(maths)
+add_subdirectory(io)
+add_subdirectory(glad)
+add_subdirectory(graphics)
+add_subdirectory(core)
+add_subdirectory(examples)
