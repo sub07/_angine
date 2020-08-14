@@ -1,10 +1,9 @@
 #pragma once
 
 #include <stdbool.h>
-#include "../../scene.h"
+#include "scene.h"
 
-typedef struct {int a;} frame_info_t;
-typedef struct {int a;} transform_t;
+typedef struct { int a; } transform_t;
 typedef struct {
   int initial_width;
   int initial_height;
@@ -17,4 +16,5 @@ typedef struct {
   void (*batches_configuration_function)(void *, int);
 } angine_config_t;
 
+angine_config_t default_config();
 void angine_run(angine_config_t *config);

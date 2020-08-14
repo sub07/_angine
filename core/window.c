@@ -72,7 +72,7 @@ window_t *window_create(window_config_t *config, event_callbacks_t *callbacks) {
   glfwMakeContextCurrent(w->window);
   glfwSwapInterval(config->vsync ? 1 : 0);
   
-  glfwSetWindowUserPointer(w->window, &w->callbacks);
+  glfwSetWindowUserPointer(w->window, callbacks);
   
   glfwSetKeyCallback(w->window, glfw_key_callback);
   glfwSetMouseButtonCallback(w->window, glfw_mouse_button_callback);
@@ -88,7 +88,7 @@ void window_free(window_t *w) {
   glfwTerminate();
 }
 
-void window_swap(window_t *w) {
+void window_swap_buffer(window_t *w) {
   glfwSwapBuffers(w->window);
 }
 
@@ -108,14 +108,26 @@ void window_disable_vsync() {
   glfwSwapInterval(0);
 }
 
-int window_get_width(window_t *w) {
+float window_get_width(window_t *w) {
   int width;
   glfwGetWindowSize(w->window, &width, null);
-  return width;
+  return (float) width;
 }
 
-int window_get_height(window_t *w) {
+float window_get_height(window_t *w) {
   int height;
   glfwGetWindowSize(w->window, null, &height);
-  return height;
+  return (float) height;
+}
+
+void window_close(window_t *w) {
+  glfwSetWindowShouldClose(w->window, GLFW_TRUE);
+}
+
+float window_get_time() {
+  return (float) glfwGetTime();
+}
+
+bool window_should_close(window_t *w) {
+  return glfwWindowShouldClose(w->window);
 }
