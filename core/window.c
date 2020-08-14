@@ -50,7 +50,7 @@ void glfw_error_callback(int error_code, const char *desc) {
 
 window_t *window_create(window_config_t *config, event_callbacks_t *callbacks) {
   glfwInit();
-  
+  glfwSetErrorCallback(glfw_error_callback);
   window_t *w = malloc(sizeof(window_t));
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
