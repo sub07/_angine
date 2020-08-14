@@ -45,7 +45,7 @@ GLFWmonitor *get_monitor_from_index(int index) {
 }
 
 void glfw_error_callback(int error_code, const char *desc) {
-  log_error("glfw error occurred: %s", desc);
+  log_abort("glfw error occurred: %s", desc);
 }
 
 window_t *window_create(window_config_t *config, event_callbacks_t *callbacks) {

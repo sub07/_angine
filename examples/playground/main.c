@@ -19,17 +19,10 @@ void scene_event(event_data_t *event, capacities_t *capacities, data *scene_data
 }
 
 int main() {
-  angine_config_t c;
-  c.initial_width = 800;
-  c.initial_height = 600;
-  c.application_name = "window-alt";
-  c.vsync = true;
-  c.fullscreen = false;
-  c.monitor_index = 0;
+  angine_config_t c = default_config();
   c.initial_scene.loop_func = (loop_func) scene_loop;
   c.initial_scene.event_func = (event_func) scene_event;
-  
-  data d = {0};
+  data d;
   c.initial_scene.data = &d;
   
   angine_run(&c);
