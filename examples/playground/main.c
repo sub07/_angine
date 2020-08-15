@@ -12,6 +12,8 @@ void scene_init(data *d, Capacities *c) {
   image_free(i);
   d->batch = c->batch_texture_create();
   d->tex_transform = transform_default();
+  batch_set_colors(d->batch, color_red, color_transparent, color_blue, color_gray);
+  
 }
 
 void scene_loop(FrameInfo *info, Capacities *capacities, data *d) {
@@ -46,6 +48,14 @@ void scene_event(EventData *event, Capacities *capacities, data *d) {
   
   if (event->type == OnMouseMove) {
     d->tex_transform.translate = event->data.mouse_position;
+  }
+  
+  if (event->type == OnMouseDown) {
+    batch_enable_alpha_blending(d->batch);
+  }
+  
+  if (event->type == OnMouseUp) {
+    batch_disable_alpha_blending(d->batch);
   }
 }
 

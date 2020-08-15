@@ -12,10 +12,10 @@ typedef struct {
 u8 color_get_int_component(Color c, int index);
 float color_get_float_component(Color c, int index);
 
-extern Color color_black;
-extern Color color_white;
-extern Color color_red;
-extern Color color_blue;
-extern Color color_green;
-extern Color color_gray;
-extern Color color_transparent;
+extern Color const color_black;
+extern Color const color_white;
+extern Color const color_red;
+extern Color const color_blue;
+extern Color const color_green;
+extern Color const color_gray;
+extern Color const color_transparent;

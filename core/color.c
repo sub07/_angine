@@ -30,11 +30,11 @@ float color_get_float_component(Color c, int index) {
   }
 }
 
-Color color_black = {0, 0, 0, 1};
-Color color_white = {1, 1, 1, 1};
-Color color_red = {1, 0, 0, 1};
-Color color_blue = {0, 0, 1, 1};
-Color color_green = {0, 1, 0, 1};
-Color color_gray = {0.5f, 0.5f, 0.5f, 1};
-Color color_transparent = {0, 0, 0, 0};
+Color const color_black = {0, 0, 0, 1};
+Color const color_white = {1, 1, 1, 1};
+Color const color_red = {1, 0, 0, 1};
+Color const color_blue = {0, 0, 1, 1};
+Color const color_green = {0, 1, 0, 1};
+Color const color_gray = {0.5f, 0.5f, 0.5f, 1};
+Color const color_transparent = {0, 0, 0, 0};
 

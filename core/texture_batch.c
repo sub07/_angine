@@ -76,7 +76,7 @@ void batch_begin(TextureBatch *batch) {
 }
 
 void flush(TextureBatch *b) {
-  if (mesh_size(b->mesh) == 0) return;
+  if (b->texture_counter == 0) return;
   bind_texture_unit(texture_handle(b->last_texture_used), 0);
   use_shader(b->shader);
   bind_vao(b->vao);
@@ -183,4 +183,18 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
   vertices[31] = b->colors[3].a;
   
   mesh_add(b->mesh, vertices, size);
+}
+
+void batch_enable_alpha_blending(TextureBatch *b) {
+  if (b->drawing) {
+    flush(b);
+  }
+  b->use_alpha_blending = true;
+}
+
+void batch_disable_alpha_blending(TextureBatch *b) {
+  if (b->drawing) {
+    flush(b);
+  }
+  b->use_alpha_blending = false;
 }
