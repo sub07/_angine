@@ -8,10 +8,10 @@ u64 get_file_size(FILE *f) {
   return ftell(f);
 }
 
-byte_buffer buffer_from_file(const char *path) {
+ByteBuffer buffer_from_file(const char *path) {
   FILE *f = fopen(path, "rb");
   u64 size = get_file_size(f);
-  byte_buffer buf = allocate_buffer(size);
+  ByteBuffer buf = allocate_buffer(size);
   rewind(f);
 #ifndef NDEBUG
   i32 read = fread(buf.buffer, 1, size, f);

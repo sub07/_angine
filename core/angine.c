@@ -1,38 +1,31 @@
 #include <core/angine.h>
 #include <stdbool.h>
-#include <maths/matrix.h>
-#include "core/scene.h"
 #include "window.h"
-#include "batch.h"
 #include <stdlib.h>
-#include <core/key.h>
-#include <utils/types.h>
 #include <assert.h>
 #include <string.h>
+#include "texture_batch.h"
 
-typedef struct { int a; } shader_collection_t;
 typedef struct {
   bool keys_state[NbKey];
   bool mouse_buttons_state[NbMouseButton];
-  vec mouse_pos;
-  vec mouse_scroll;
+  Vec mouse_pos;
+  Vec mouse_scroll;
   Modifiers mods;
 } EventState;
 
 typedef struct {
-  window_t *window;
+  Window *window;
   Scene scene;
   FrameInfo frame_info;
   bool program_should_close;
-  shader_collection_t shaders;
+  ShaderCollection shaders;
   EventState event_state;
-  batch_t *batches;
   Transform global_transformation;
   Capacities capacities;
 } Angine;
 
 Angine *instance = null;
-bool any_instance = false;
 
 void key_callback(void *p, Key key, ActionState action, Modifiers mods) {
   Angine *a = p;
@@ -82,6 +75,9 @@ void window_resize_callback(void *p, float w, float h) {
   e.data.new_window_width = w;
   e.data.new_window_height = h;
   a->scene.event_func(&e, &a->capacities, a->scene.data);
+  set_viewport((int) w, (int) h);
+  use_shader(a->shaders.texture_batch_shader);
+  send_vec2_shader(a->shaders.texture_batch_shader, "viewportSize", w, h);
 }
 
 void event_state_init(Angine *a) {
@@ -99,8 +95,17 @@ void event_state_init(Angine *a) {
   a->event_state.mods.shift = false;
 }
 
+void init_shaders(Angine *a) {
+  a->shaders = shader_collection_create();
+  use_shader(a->shaders.texture_batch_shader);
+  send_vec2_shader(a->shaders.texture_batch_shader,
+                   "viewportSize",
+                   window_get_width(a->window),
+                   window_get_height(a->window));
+}
+
 Angine *angine_create(AngineConfig *config, event_callbacks_t *callbacks) {
-  assert(!any_instance);
+  assert(instance == null);
   Angine *a = malloc(sizeof(Angine));
   callbacks->event_manager = a;
   callbacks->window_resize_callback = window_resize_callback;
@@ -111,14 +116,18 @@ Angine *angine_create(AngineConfig *config, event_callbacks_t *callbacks) {
   a->window = window_create((window_config_t *) config, callbacks);
   a->program_should_close = false;
   a->scene = config->initial_scene;
+  a->frame_info.frame_index = 0;
+  a->frame_info.fps = 0;
+  a->frame_info.dt = 0;
   event_state_init(a);
-  any_instance = true;
   instance = a;
+  load_gl_from_loader(window_get_proc_loader(), false);
+  set_clear_color(0.5f, 0.5f, 0.5f, 1.f);
+  init_shaders(a);
   return a;
 }
 
 void angine_free(Angine *a) {
-  any_instance = false;
   instance = null;
   window_free(a->window);
   free(a);
@@ -134,6 +143,10 @@ float cap_window_width() {
 
 float cap_window_height() {
   return window_get_height(instance->window);
+}
+
+TextureBatch *cap_batch_create() {
+  return batch_create(instance->shaders.texture_batch_shader);
 }
 
 void dispatch_events(Angine *a, EventState previous) {
@@ -196,7 +209,6 @@ void dispatch_events(Angine *a, EventState previous) {
       a->event_state.mouse_scroll.y = 0;
     }
   }
-  
 }
 
 void angine_run(AngineConfig *config) {
@@ -205,12 +217,15 @@ void angine_run(AngineConfig *config) {
   a->capacities.close_program = cap_close_program;
   a->capacities.window_height = cap_window_height;
   a->capacities.window_width = cap_window_width;
+  a->capacities.batch_texture_create = cap_batch_create;
   
   float last = window_get_time();
   
   float dt_acc = 0;
   const int acc_reset_size = 20;
   int acc_size = 0;
+  
+  a->scene.init_func(a->scene.data, &a->capacities);
   
   EventState previous = a->event_state;
   while (!a->program_should_close) {
@@ -234,11 +249,12 @@ void angine_run(AngineConfig *config) {
     // scene
     dispatch_events(a, previous);
     previous = a->event_state;
-    
+    clear_screen();
     a->scene.loop_func(&a->frame_info, &a->capacities, a->scene.data);
     a->frame_info.frame_index++;
     window_swap_buffer(a->window);
   }
+  a->scene.end_func(a->scene.data);
   
   angine_free(a);
 }

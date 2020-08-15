@@ -48,10 +48,10 @@ void glfw_error_callback(int error_code, const char *desc) {
   log_abort("glfw error occurred: %s", desc);
 }
 
-window_t *window_create(window_config_t *config, event_callbacks_t *callbacks) {
+Window *window_create(window_config_t *config, event_callbacks_t *callbacks) {
   glfwInit();
   glfwSetErrorCallback(glfw_error_callback);
-  window_t *w = malloc(sizeof(window_t));
+  Window *w = malloc(sizeof(Window));
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   
@@ -83,16 +83,16 @@ window_t *window_create(window_config_t *config, event_callbacks_t *callbacks) {
   return w;
 }
 
-void window_free(window_t *w) {
+void window_free(Window *w) {
   glfwDestroyWindow(w->window);
   glfwTerminate();
 }
 
-void window_swap_buffer(window_t *w) {
+void window_swap_buffer(Window *w) {
   glfwSwapBuffers(w->window);
 }
 
-void window_set_title(window_t *w, const char *title) {
+void window_set_title(Window *w, const char *title) {
   glfwSetWindowTitle(w->window, title);
 }
 
@@ -108,19 +108,19 @@ void window_disable_vsync() {
   glfwSwapInterval(0);
 }
 
-float window_get_width(window_t *w) {
+float window_get_width(Window *w) {
   int width;
   glfwGetWindowSize(w->window, &width, null);
   return (float) width;
 }
 
-float window_get_height(window_t *w) {
+float window_get_height(Window *w) {
   int height;
   glfwGetWindowSize(w->window, null, &height);
   return (float) height;
 }
 
-void window_close(window_t *w) {
+void window_close(Window *w) {
   glfwSetWindowShouldClose(w->window, GLFW_TRUE);
 }
 
@@ -128,6 +128,10 @@ float window_get_time() {
   return (float) glfwGetTime();
 }
 
-bool window_should_close(window_t *w) {
+bool window_should_close(Window *w) {
   return glfwWindowShouldClose(w->window);
+}
+
+ProcFuncLoader window_get_proc_loader() {
+  return (ProcFuncLoader) glfwGetProcAddress;
 }

@@ -1,3 +1,14 @@
 #pragma once
 
-typedef struct {} shader_t;
+#include <graphics/graphics.h>
+#include <utils/log.h>
+#include "shader_sources.h"
+
+typedef Handle Shader;
+
+typedef struct {
+  Shader texture_batch_shader;
+} ShaderCollection;
+
+ShaderCollection shader_collection_create();
+void shader_collection_free(ShaderCollection s);

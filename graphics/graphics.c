@@ -111,33 +111,33 @@ GLenum gl_enum_from_buffer_type(enum buffer_type type) {
   }
 }
 
-handle_t create_buffer(void *data, int size, enum buffer_type type) {
-  handle_t vbo;
+Handle create_buffer(void *data, int size, enum buffer_type type) {
+  Handle vbo;
   glCreateBuffers(1, &vbo);
   glNamedBufferData(vbo, size, data, gl_enum_from_buffer_type(type));
   return vbo;
 }
 
-void upload_data_buffer(handle_t vbo, void *data, int size, long long int offset) {
+void upload_data_buffer(Handle vbo, void *data, int size, long long int offset) {
   glNamedBufferSubData(vbo, offset, size, data);
 }
 
-handle_t bound_ibo = 0;
+Handle bound_ibo = 0;
 
-void bind_as_indices_buffer(handle_t ibo) {
+void bind_as_indices_buffer(Handle ibo) {
   if (bound_ibo != ibo) {
     bound_ibo = ibo;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   }
 }
 
-void delete_buffer(handle_t buffer) {
+void delete_buffer(Handle buffer) {
   glDeleteBuffers(1, &buffer);
 }
 
-handle_t create_vao(int n, int *strides, long int *offsets, int *sizes,
-                    handle_t vbo) {
-  handle_t vao;
+Handle create_vao(int n, int *strides, long int *offsets, int *sizes,
+                  Handle vbo) {
+  Handle vao;
   glCreateVertexArrays(1, &vao);
   
   for (int i = 0; i < n; i++) {
@@ -150,16 +150,16 @@ handle_t create_vao(int n, int *strides, long int *offsets, int *sizes,
   return vao;
 }
 
-handle_t bound_vao = 0;
+Handle bound_vao = 0;
 
-void bind_vao(handle_t vao) {
+void bind_vao(Handle vao) {
   if (bound_vao != vao) {
     bound_vao = vao;
     glBindVertexArray(vao);
   }
 }
 
-void delete_vao(handle_t vao) {
+void delete_vao(Handle vao) {
   glDeleteVertexArrays(1, &vao);
 }
 
@@ -204,9 +204,9 @@ int alignmentFromNbChannel(int nbChannel) {
   }
 }
 
-handle_t create_texture(enum filter_t filter, int width, int height,
-                        int nb_channel, void *data) {
-  handle_t tex;
+Handle create_texture(enum filter_t filter, int width, int height,
+                      int nb_channel, void *data) {
+  Handle tex;
   glPixelStorei(GL_UNPACK_ALIGNMENT, alignmentFromNbChannel(nb_channel));
   glCreateTextures(GL_TEXTURE_2D, 1, &tex);
   glTextureParameteri(tex, GL_TEXTURE_MIN_FILTER,
@@ -221,15 +221,15 @@ handle_t create_texture(enum filter_t filter, int width, int height,
   return tex;
 }
 
-void bind_texture_unit(handle_t texture, unsigned int texture_unit) {
+void bind_texture_unit(Handle texture, unsigned int texture_unit) {
   glBindTextureUnit(texture_unit, texture);
 }
 
-void delete_texture(handle_t texture) {
+void delete_texture(Handle texture) {
   glDeleteTextures(1, &texture);
 }
 
-bool checkCompileLog(handle_t shader, char *buffer, int bufferSize) {
+bool checkCompileLog(Handle shader, char *buffer, int bufferSize) {
   if (buffer != NULL) {
     int compileStatus;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
@@ -241,24 +241,24 @@ bool checkCompileLog(handle_t shader, char *buffer, int bufferSize) {
   return true;
 }
 
-handle_t create_shader(const char *vertex_source, const char *fragment_source,
-                       char *vertex_compilation_error,
-                       char *fragment_compilation_error,
-                       int vertex_compilation_error_buffer_size,
-                       int fragment_compilation_error_buffer_size) {
-  handle_t vs = glCreateShader(GL_VERTEX_SHADER);
+Handle create_shader(const char *vertex_source, const char *fragment_source,
+                     char *vertex_compilation_error,
+                     char *fragment_compilation_error,
+                     int vertex_compilation_error_buffer_size,
+                     int fragment_compilation_error_buffer_size) {
+  Handle vs = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vs, 1, &vertex_source, 0);
   glCompileShader(vs);
   bool vertexSuccess = checkCompileLog(vs, vertex_compilation_error,
                                        vertex_compilation_error_buffer_size);
   
-  handle_t fs = glCreateShader(GL_FRAGMENT_SHADER);
+  Handle fs = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(fs, 1, &fragment_source, 0);
   glCompileShader(fs);
   bool fragmentSuccess = checkCompileLog(fs, fragment_compilation_error,
                                          fragment_compilation_error_buffer_size);
   
-  handle_t program = glCreateProgram();
+  Handle program = glCreateProgram();
   glAttachShader(program, vs);
   glAttachShader(program, fs);
   glLinkProgram(program);
@@ -268,42 +268,42 @@ handle_t create_shader(const char *vertex_source, const char *fragment_source,
   return vertexSuccess && fragmentSuccess ? program : 0u;
 }
 
-handle_t bound_shader = 0;
+Handle bound_shader = 0;
 
-void use_shader(handle_t shader) {
+void use_shader(Handle shader) {
   if (bound_shader != shader) {
     bound_shader = shader;
     glUseProgram(shader);
   }
 }
 
-void send_int_shader(handle_t shader, const char *name, int value) {
+void send_int_shader(Handle shader, const char *name, int value) {
   unsigned int location = glGetUniformLocation(shader, name);
   glUniform1i(location, value);
 }
 
-void send_float_shader(handle_t shader, const char *name, float value) {
+void send_float_shader(Handle shader, const char *name, float value) {
   unsigned int location = glGetUniformLocation(shader, name);
   glUniform1f(location, value);
 }
 
-void send_matrix3_shader(handle_t shader, const char *name, float *mat) {
+void send_matrix3_shader(Handle shader, const char *name, float *mat) {
   unsigned int location = glGetUniformLocation(shader, name);
   glUniformMatrix3fv(location, 1, GL_FALSE, mat);
 }
 
-void send_vec2_shader(handle_t shader, const char *name, float x, float y) {
+void send_vec2_shader(Handle shader, const char *name, float x, float y) {
   unsigned int location = glGetUniformLocation(shader, name);
   glUniform2f(location, x, y);
 }
 
-void send_vec4_shader(handle_t shader, const char *name, float r, float g,
+void send_vec4_shader(Handle shader, const char *name, float r, float g,
                       float b, float a) {
   unsigned int location = glGetUniformLocation(shader, name);
   glUniform4f(location, r, g, b, a);
 }
 
-void delete_shader(handle_t shader) {
+void delete_shader(Handle shader) {
   glDeleteProgram(shader);
 }
 

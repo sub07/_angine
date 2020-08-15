@@ -3,6 +3,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <utils/stb_image.h>
+#include <utils/log.h>
 
 Image *image_create(int width, int height, image_format_ format) {
   Image *i = malloc(sizeof(Image));
@@ -16,6 +17,7 @@ Image *image_create(int width, int height, image_format_ format) {
 Image *image_create_from_file(const char *path) {
   Image *i = malloc(sizeof(Image));
   i->pixels = stbi_load(path, &i->width, &i->height, &i->nb_channel, 0);
+  if (i->pixels == null) { log_abort("Failed to load image at %s", path); }
   return i;
 }
 
@@ -28,7 +30,7 @@ void image_clear(Image *image, Color clear_color) {
   u8 *p = image->pixels;
   for (int i = 0; i < image->width * image->height * image->nb_channel; i += image->nb_channel) {
     for (int c = 0; c < image->nb_channel; c++) {
-      p[i + c] = color_get_component(clear_color, c);
+      p[i + c] = color_get_int_component(clear_color, c);
     }
   }
 }

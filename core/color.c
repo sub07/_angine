@@ -1,6 +1,21 @@
 #include <core/color.h>
 
-u8 color_get_component(Color c, int index) {
+u8 color_get_int_component(Color c, int index) {
+  switch (index) {
+  case 0:
+    return c.r * 255;
+  case 1:
+    return c.g * 255;
+  case 2:
+    return c.b * 255;
+  case 3:
+    return c.a * 255;
+  default:
+    return 0;
+  }
+}
+
+float color_get_float_component(Color c, int index) {
   switch (index) {
   case 0:
     return c.r;
@@ -15,11 +30,11 @@ u8 color_get_component(Color c, int index) {
   }
 }
 
-Color color_black = {0, 0, 0, 255};
-Color color_white = {255, 255, 255, 255};
-Color color_red = {255, 0, 0, 255};
-Color color_blue = {0, 0, 255, 255};
-Color color_green = {0, 255, 0, 255};
-Color color_gray = {125, 125, 125, 255};
+Color color_black = {0, 0, 0, 1};
+Color color_white = {1, 1, 1, 1};
+Color color_red = {1, 0, 0, 1};
+Color color_blue = {0, 0, 1, 1};
+Color color_green = {0, 1, 0, 1};
+Color color_gray = {0.5f, 0.5f, 0.5f, 1};
 Color color_transparent = {0, 0, 0, 0};
 

@@ -9,23 +9,32 @@
 typedef struct {
   float x;
   float y;
-} vec;
+} Vec;
 
-API bool vec_eq(vec v1, vec v2);
-API vec vec_add(vec v1, vec v2);
-API vec vec_sub(vec v1, vec v2);
-API vec vec_mul(vec v1, vec v2);
-API vec vec_div(vec v1, vec v2);
-API vec vec_add_f(vec v, float val);
-API vec vec_sub_f(vec v, float val);
-API vec vec_mul_f(vec v, float val);
-API vec vec_div_f(vec v, float val);
-API float vec_norm(vec v);
-API vec vec_middle(vec v1, vec v2);
-API vec vec_normalize(vec v);
-API vec vec_normal(vec v);
-API float vec_dist(vec v1, vec v2);
-API float vec_dist2(vec v1, vec v2);
-API float vec_det(vec v1, vec v2);
-API float dev_dot(vec v1, vec v2);
-API vec vec_rotate(vec v, float val);
+typedef struct {
+  Vec translate;
+  float rotate;
+  Vec scale;
+  Vec origin;
+} Transform;
+
+API Transform transform_default();
+
+API bool vec_eq(Vec v1, Vec v2);
+API Vec vec_add(Vec v1, Vec v2);
+API Vec vec_sub(Vec v1, Vec v2);
+API Vec vec_mul(Vec v1, Vec v2);
+API Vec vec_div(Vec v1, Vec v2);
+API Vec vec_add_f(Vec v, float val);
+API Vec vec_sub_f(Vec v, float val);
+API Vec vec_mul_f(Vec v, float val);
+API Vec vec_div_f(Vec v, float val);
+API float vec_norm(Vec v);
+API Vec vec_middle(Vec v1, Vec v2);
+API Vec vec_normalize(Vec v);
+API Vec vec_normal(Vec v);
+API float vec_dist(Vec v1, Vec v2);
+API float vec_dist2(Vec v1, Vec v2);
+API float vec_det(Vec v1, Vec v2);
+API float dev_dot(Vec v1, Vec v2);
+API Vec vec_rotate(Vec v, float val);

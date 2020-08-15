@@ -14,12 +14,12 @@ typedef struct {
   float m20;
   float m21;
   float m22;
-} mat3_t;
+} Mat3;
 
-mat3_t mat3_identity();
-mat3_t mat3_ortho(float left, float right, float top, float bottom);
-mat3_t mat3_translate(mat3_t m, float x, float y);
-mat3_t mat3_rotate(mat3_t m, float rotate);
-mat3_t mat3_scale(mat3_t m, float x, float y);
-mat3_t mat3_mul(mat3_t m1, mat3_t m2);
-vec mat3_mul_vec(mat3_t m, vec v);
+Mat3 mat3_identity();
+Mat3 mat3_ortho(float left, float right, float top, float bottom);
+Mat3 mat3_translate(Mat3 m, float x, float y);
+Mat3 mat3_rotate(Mat3 m, float rotate);
+Mat3 mat3_scale(Mat3 m, float x, float y);
+Mat3 mat3_mul(Mat3 m1, Mat3 m2);
+Vec mat3_mul_vec(Mat3 m, Vec v);
