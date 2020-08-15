@@ -17,21 +17,21 @@ typedef enum {
   LeftShift, LeftControl, Super, LeftAlt, Space, RightAlt, RightControl, RightShift,
   Enter, Backspace,
   NbKey
-} key_t;
+} Key;
 
 typedef enum {
   LeftButton = 0,
   MiddleButton,
   RightButton,
   NbMouseButton
-} mouse_button_t;
+} MouseButton;
 
 typedef enum {
   Pressed = 0,
   Released,
   Repeated,
   NbAction
-} action_state_t;
+} ActionState;
 
 typedef struct {
   bool ctrl: 1;
@@ -40,4 +40,4 @@ typedef struct {
   bool super: 1;
   bool num_lock: 1;
   bool caps_lock: 1;
-} modifiers_t;
+} Modifiers;

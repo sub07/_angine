@@ -1,7 +1,7 @@
 #include "glfw.h"
 #include "utils.h"
 
-key_t glfw_to_engine_key(int glfw_key) {
+Key glfw_to_engine_key(int glfw_key) {
   switch (glfw_key) {
   case GLFW_KEY_A :
     return A;
@@ -213,7 +213,7 @@ key_t glfw_to_engine_key(int glfw_key) {
   }
 }
 
-action_state_t glfw_to_engine_action(int glfw_button_state) {
+ActionState glfw_to_engine_action(int glfw_button_state) {
   switch (glfw_button_state) {
   case GLFW_PRESS:
     return Pressed;
@@ -226,8 +226,8 @@ action_state_t glfw_to_engine_action(int glfw_button_state) {
   }
 }
 
-modifiers_t glfw_to_engine_modifiers(int mods) {
-  return (modifiers_t) {
+Modifiers glfw_to_engine_modifiers(int mods) {
+  return (Modifiers) {
       mods & GLFW_MOD_CONTROL,
       mods & GLFW_MOD_ALT,
       mods & GLFW_MOD_SHIFT,
@@ -237,7 +237,7 @@ modifiers_t glfw_to_engine_modifiers(int mods) {
   };
 }
 
-mouse_button_t glfw_to_engine_mouse_button(int glfw_button) {
+MouseButton glfw_to_engine_mouse_button(int glfw_button) {
   switch (glfw_button) {
   case GLFW_MOUSE_BUTTON_RIGHT:
     return RightButton;

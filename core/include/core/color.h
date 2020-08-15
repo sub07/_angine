@@ -7,14 +7,14 @@ typedef struct {
   u8 g;
   u8 b;
   u8 a;
-} color_t;
+} Color;
 
-u8 color_get_component(color_t c, int index);
+u8 color_get_component(Color c, int index);
 
-extern color_t color_black;
-extern color_t color_white;
-extern color_t color_red;
-extern color_t color_blue;
-extern color_t color_green;
-extern color_t color_gray;
-extern color_t color_transparent;
+extern Color color_black;
+extern Color color_white;
+extern Color color_red;
+extern Color color_blue;
+extern Color color_green;
+extern Color color_gray;
+extern Color color_transparent;

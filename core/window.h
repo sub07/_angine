@@ -5,8 +5,8 @@
 
 typedef struct {
   void *event_manager;
-  void (*key_callback)(void *, key_t, action_state_t, modifiers_t);
-  void (*mouse_button_callback)(void *, mouse_button_t, action_state_t, modifiers_t);
+  void (*key_callback)(void *, Key, ActionState, Modifiers);
+  void (*mouse_button_callback)(void *, MouseButton, ActionState, Modifiers);
   void (*mouse_move_callback)(void *, float, float);
   void (*mouse_scroll_callback)(void *, float, float);
   void (*window_resize_callback)(void *, float, float);

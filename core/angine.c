@@ -16,26 +16,26 @@ typedef struct {
   bool mouse_buttons_state[NbMouseButton];
   vec mouse_pos;
   vec mouse_scroll;
-  modifiers_t mods;
-} event_state_t;
+  Modifiers mods;
+} EventState;
 
 typedef struct {
   window_t *window;
-  scene_t scene;
-  frame_info_t frame_info;
+  Scene scene;
+  FrameInfo frame_info;
   bool program_should_close;
   shader_collection_t shaders;
-  event_state_t event_state;
+  EventState event_state;
   batch_t *batches;
-  transform_t global_transformation;
-  capacities_t capacities;
-} angine_t;
+  Transform global_transformation;
+  Capacities capacities;
+} Angine;
 
-angine_t *instance = null;
+Angine *instance = null;
 bool any_instance = false;
 
-void key_callback(void *p, key_t key, action_state_t action, modifiers_t mods) {
-  angine_t *a = p;
+void key_callback(void *p, Key key, ActionState action, Modifiers mods) {
+  Angine *a = p;
   a->event_state.mods = mods;
   if (action == Pressed) {
     a->event_state.keys_state[key] = true;
@@ -46,8 +46,8 @@ void key_callback(void *p, key_t key, action_state_t action, modifiers_t mods) {
   }
 }
 
-void mouse_button_callback(void *p, mouse_button_t button, action_state_t action, modifiers_t mods) {
-  angine_t *a = p;
+void mouse_button_callback(void *p, MouseButton button, ActionState action, Modifiers mods) {
+  Angine *a = p;
   a->event_state.mods = mods;
   if (button == LeftButton) {
     if (action == Pressed) a->event_state.mouse_buttons_state[LeftButton] = true;
@@ -64,27 +64,27 @@ void mouse_button_callback(void *p, mouse_button_t button, action_state_t action
 }
 
 void mouse_move_callback(void *p, float x, float y) {
-  angine_t *a = p;
+  Angine *a = p;
   a->event_state.mouse_pos.x = x;
   a->event_state.mouse_pos.y = y;
 }
 
 void mouse_scroll_callback(void *p, float x, float y) {
-  angine_t *a = p;
+  Angine *a = p;
   a->event_state.mouse_scroll.x = x;
   a->event_state.mouse_scroll.y = y;
 }
 
 void window_resize_callback(void *p, float w, float h) {
-  angine_t *a = p;
-  event_data_t e;
+  Angine *a = p;
+  EventData e;
   e.type = OnWindowResize;
-  e.data.window_resize.new_width = w;
-  e.data.window_resize.new_height = h;
+  e.data.new_window_width = w;
+  e.data.new_window_height = h;
   a->scene.event_func(&e, &a->capacities, a->scene.data);
 }
 
-void event_state_init(angine_t *a) {
+void event_state_init(Angine *a) {
   memset(a->event_state.keys_state, 0, NbKey);
   memset(a->event_state.mouse_buttons_state, 0, NbMouseButton);
   a->event_state.mouse_pos.x = 0;
@@ -99,9 +99,9 @@ void event_state_init(angine_t *a) {
   a->event_state.mods.shift = false;
 }
 
-angine_t *angine_create(angine_config_t *config, event_callbacks_t *callbacks) {
+Angine *angine_create(AngineConfig *config, event_callbacks_t *callbacks) {
   assert(!any_instance);
-  angine_t *a = malloc(sizeof(angine_t));
+  Angine *a = malloc(sizeof(Angine));
   callbacks->event_manager = a;
   callbacks->window_resize_callback = window_resize_callback;
   callbacks->mouse_scroll_callback = mouse_scroll_callback;
@@ -117,7 +117,7 @@ angine_t *angine_create(angine_config_t *config, event_callbacks_t *callbacks) {
   return a;
 }
 
-void angine_free(angine_t *a) {
+void angine_free(Angine *a) {
   any_instance = false;
   instance = null;
   window_free(a->window);
@@ -136,30 +136,27 @@ float cap_window_height() {
   return window_get_height(instance->window);
 }
 
-void dispatch_events(angine_t *a, event_state_t previous) {
+void dispatch_events(Angine *a, EventState previous) {
   a->program_should_close = window_should_close(a->window);
-  scene_t s = a->scene;
-  modifiers_t mods = a->event_state.mods;
-  event_data_t e;
+  Scene s = a->scene;
+  EventData e;
+  e.data.mods = a->event_state.mods;
   for (int key = 0; key < NbKey; key++) {
     if (a->event_state.keys_state[key]) {
       if (!previous.keys_state[key]) {
         e.type = OnKeyDown;
-        e.data.key.key = key;
-        e.data.key.mods = mods;
+        e.data.key = key;
         s.event_func(&e, &a->capacities, s.data);
       }
       e.type = KeyDown;
-      e.data.key.key = key;
-      e.data.key.mods = mods;
+      e.data.key = key;
       s.event_func(&e, &a->capacities, s.data);
     }
     
     if (previous.keys_state[key]) {
       if (!a->event_state.keys_state[key]) {
         e.type = OnKeyUp;
-        e.data.key.key = key;
-        e.data.key.mods = mods;
+        e.data.key = key;
         s.event_func(&e, &a->capacities, s.data);
       }
     }
@@ -169,34 +166,31 @@ void dispatch_events(angine_t *a, event_state_t previous) {
     if (a->event_state.mouse_buttons_state[button]) {
       if (!previous.mouse_buttons_state[button]) {
         e.type = OnMouseDown;
-        e.data.mouse_button.button = button;
-        e.data.mouse_button.mods = mods;
+        e.data.button = button;
         s.event_func(&e, &a->capacities, s.data);
       }
       e.type = MouseDown;
-      e.data.mouse_button.button = button;
-      e.data.mouse_button.mods = mods;
+      e.data.button = button;
       s.event_func(&e, &a->capacities, s.data);
     }
     
     if (previous.mouse_buttons_state[button]) {
       if (!a->event_state.mouse_buttons_state[button]) {
         e.type = OnMouseUp;
-        e.data.mouse_button.button = button;
-        e.data.mouse_button.mods = mods;
+        e.data.button = button;
         s.event_func(&e, &a->capacities, s.data);
       }
     }
     
     if (!vec_eq(a->event_state.mouse_pos, previous.mouse_pos)) {
       e.type = OnMouseMove;
-      e.data.mouse_motion.pos = a->event_state.mouse_pos;
+      e.data.mouse_position = a->event_state.mouse_pos;
       s.event_func(&e, &a->capacities, s.data);
     }
     
     if (!vec_eq(a->event_state.mouse_scroll, previous.mouse_scroll)) {
       e.type = OnMouseScroll;
-      e.data.mouse_motion.pos = a->event_state.mouse_scroll;
+      e.data.mouse_scroll = a->event_state.mouse_scroll;
       s.event_func(&e, &a->capacities, s.data);
       a->event_state.mouse_scroll.x = 0;
       a->event_state.mouse_scroll.y = 0;
@@ -205,9 +199,9 @@ void dispatch_events(angine_t *a, event_state_t previous) {
   
 }
 
-void angine_run(angine_config_t *config) {
+void angine_run(AngineConfig *config) {
   event_callbacks_t callbacks;
-  angine_t *a = angine_create(config, &callbacks);
+  Angine *a = angine_create(config, &callbacks);
   a->capacities.close_program = cap_close_program;
   a->capacities.window_height = cap_window_height;
   a->capacities.window_width = cap_window_width;
@@ -218,7 +212,7 @@ void angine_run(angine_config_t *config) {
   const int acc_reset_size = 20;
   int acc_size = 0;
   
-  event_state_t previous = a->event_state;
+  EventState previous = a->event_state;
   while (!a->program_should_close) {
     // dt
     float time = window_get_time();
@@ -249,11 +243,9 @@ void angine_run(angine_config_t *config) {
   angine_free(a);
 }
 
-angine_config_t default_config() {
-  angine_config_t c;
-  c.needed_batch = 0;
+AngineConfig default_config() {
+  AngineConfig c;
   c.fullscreen = false;
-  c.batches_configuration_function = null;
   c.monitor_index = 0;
   c.vsync = true;
   c.application_name = "Angine window";
