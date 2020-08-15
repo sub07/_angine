@@ -7,7 +7,6 @@
 
 void glfw_key_callback(GLFWwindow *w, int key, int scancode, int action, int mods) {
   event_callbacks_t *e = glfwGetWindowUserPointer(w);
-  
   e->key_callback(e->event_manager,
                   glfw_to_engine_key(key),
                   glfw_to_engine_action(action),

@@ -42,8 +42,7 @@ TextureBatch *batch_create(Shader s) {
   TextureBatch *t = malloc(sizeof(TextureBatch));
   t->shader = s;
   t->last_texture_used = null;
-  // 500 textures can fit in batch
-  int nb_texture = 500;
+  int nb_texture = 1000;
   t->mesh = mesh_create(nb_texture * nb_float_per_texture_point * 4);
   t->use_alpha_blending = false;
   t->drawing = false;
@@ -183,6 +182,10 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
   vertices[31] = b->colors[3].a;
   
   mesh_add(b->mesh, vertices, size);
+}
+
+void batch_font(TextureBatch *b, Font *font, Transform *transform) {
+
 }
 
 void batch_enable_alpha_blending(TextureBatch *b) {

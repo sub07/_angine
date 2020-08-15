@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utils/types.h>
+#include <stdbool.h>
 #include "color.h"
 
 typedef struct image_t {
@@ -18,6 +19,7 @@ typedef enum {
 } image_format_;
 
 Image *image_create(int width, int height, image_format_ format);
+Image *image_create_from_data(void *data, int width, int height, image_format_ format);
 Image *image_create_from_file(const char *path);
 void image_free(Image *image);
 

@@ -1,9 +1,14 @@
 #include <core/angine.h>
+#include <stdio.h>
+#include <maths/utils.h>
+#include <core/font.h>
 
 typedef struct {
   Texture *tex;
   Transform tex_transform;
   TextureBatch *batch;
+  int c;
+  Font *courier;
 } data;
 
 void scene_init(data *d, Capacities *c) {
@@ -12,23 +17,41 @@ void scene_init(data *d, Capacities *c) {
   image_free(i);
   d->batch = c->batch_texture_create();
   d->tex_transform = transform_default();
-  batch_set_colors(d->batch, color_red, color_transparent, color_blue, color_gray);
-  
+//  batch_set_colors(d->batch, color_red, color_transparent, color_blue, color_gray);
+  d->c = 1;
+  d->courier = font_create("assets/courier.ttf", 20);
 }
 
-void scene_loop(FrameInfo *info, Capacities *capacities, data *d) {
+typedef struct {
+  Texture *t;
+} hack;
+
+void scene_loop(FrameInfo *info, Capacities *c, data *d) {
+  char fps_string[50];
+  sprintf(fps_string, "%d %d", (int) info->fps, d->c * d->c);
+  c->window_title(fps_string);
+  hack *h = (hack *) d->courier;
   batch_begin(d->batch);
-  batch_texture(d->batch, d->tex, &d->tex_transform);
+  for (int x = 0; x < d->c; x++) {
+    for (int y = 0; y < d->c; y++) {
+      d->tex_transform.translate.x = (float) x * 16 + 50;
+      d->tex_transform.translate.y = (float) y * 16 + 50;
+      batch_texture(d->batch, d->tex, &d->tex_transform);
+    }
+  }
+  Transform def = transform_default();
+  def.translate.x = -500;
+  batch_texture(d->batch, h->t, &def);
   batch_end(d->batch);
 }
 
-void scene_event(EventData *event, Capacities *capacities, data *d) {
+void scene_event(EventData *event, FrameInfo *info, Capacities *capacities, data *d) {
   if (event->type == KeyDown) {
     Key k = event->data.key;
     if (k == Q) {
-      d->tex_transform.rotate += 0.01f;
+      d->tex_transform.rotate += (pi / 2) * info->dt;
     } else if (k == D) {
-      d->tex_transform.rotate -= 0.01f;
+      d->tex_transform.rotate -= (pi / 2) * info->dt;
     } else if (k == Z) {
       d->tex_transform.scale.x += 0.01f;
       d->tex_transform.scale.y += 0.01f;
@@ -36,13 +59,23 @@ void scene_event(EventData *event, Capacities *capacities, data *d) {
       d->tex_transform.scale.x -= 0.01f;
       d->tex_transform.scale.y -= 0.01f;
     } else if (k == Up) {
+      d->c++;
       d->tex_transform.origin.y -= 0.1f;
     } else if (k == Down) {
+      d->c--;
       d->tex_transform.origin.y += 0.1f;
     } else if (k == Left) {
       d->tex_transform.origin.x -= 0.1f;
     } else if (k == Right) {
       d->tex_transform.origin.x += 0.1f;
+    }
+  }
+  
+  if (event->type == OnKeyDown) {
+    if (event->mods.ctrl) {
+      if (event->data.key == R) {
+        d->c = 1;
+      }
     }
   }
   
@@ -59,8 +92,9 @@ void scene_event(EventData *event, Capacities *capacities, data *d) {
   }
 }
 
-void scene_end(data *scene_data) {
-  texture_free(scene_data->tex);
+void scene_end(data *d) {
+  font_free(d->courier);
+  texture_free(d->tex);
 }
 
 int main() {

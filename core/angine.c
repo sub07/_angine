@@ -72,9 +72,9 @@ void window_resize_callback(void *p, float w, float h) {
   Angine *a = p;
   EventData e;
   e.type = OnWindowResize;
-  e.data.new_window_width = w;
-  e.data.new_window_height = h;
-  a->scene.event_func(&e, &a->capacities, a->scene.data);
+  e.data.new_window_size.x = w;
+  e.data.new_window_size.y = h;
+  a->scene.event_func(&e, &a->frame_info, &a->capacities, a->scene.data);
   set_viewport((int) w, (int) h);
   use_shader(a->shaders.texture_batch_shader);
   send_vec2_shader(a->shaders.texture_batch_shader, "viewportSize", w, h);
@@ -149,28 +149,32 @@ TextureBatch *cap_batch_create() {
   return batch_create(instance->shaders.texture_batch_shader);
 }
 
+void cap_window_title(const char *title) {
+  window_set_title(instance->window, title);
+}
+
 void dispatch_events(Angine *a, EventState previous) {
   a->program_should_close = window_should_close(a->window);
   Scene s = a->scene;
   EventData e;
-  e.data.mods = a->event_state.mods;
+  e.mods = a->event_state.mods;
   for (int key = 0; key < NbKey; key++) {
     if (a->event_state.keys_state[key]) {
       if (!previous.keys_state[key]) {
         e.type = OnKeyDown;
         e.data.key = key;
-        s.event_func(&e, &a->capacities, s.data);
+        s.event_func(&e, &a->frame_info, &a->capacities, s.data);
       }
       e.type = KeyDown;
       e.data.key = key;
-      s.event_func(&e, &a->capacities, s.data);
+      s.event_func(&e, &a->frame_info, &a->capacities, s.data);
     }
     
     if (previous.keys_state[key]) {
       if (!a->event_state.keys_state[key]) {
         e.type = OnKeyUp;
         e.data.key = key;
-        s.event_func(&e, &a->capacities, s.data);
+        s.event_func(&e, &a->frame_info, &a->capacities, s.data);
       }
     }
   }
@@ -180,31 +184,31 @@ void dispatch_events(Angine *a, EventState previous) {
       if (!previous.mouse_buttons_state[button]) {
         e.type = OnMouseDown;
         e.data.button = button;
-        s.event_func(&e, &a->capacities, s.data);
+        s.event_func(&e, &a->frame_info, &a->capacities, s.data);
       }
       e.type = MouseDown;
       e.data.button = button;
-      s.event_func(&e, &a->capacities, s.data);
+      s.event_func(&e, &a->frame_info, &a->capacities, s.data);
     }
     
     if (previous.mouse_buttons_state[button]) {
       if (!a->event_state.mouse_buttons_state[button]) {
         e.type = OnMouseUp;
         e.data.button = button;
-        s.event_func(&e, &a->capacities, s.data);
+        s.event_func(&e, &a->frame_info, &a->capacities, s.data);
       }
     }
     
     if (!vec_eq(a->event_state.mouse_pos, previous.mouse_pos)) {
       e.type = OnMouseMove;
       e.data.mouse_position = a->event_state.mouse_pos;
-      s.event_func(&e, &a->capacities, s.data);
+      s.event_func(&e, &a->frame_info, &a->capacities, s.data);
     }
     
     if (!vec_eq(a->event_state.mouse_scroll, previous.mouse_scroll)) {
       e.type = OnMouseScroll;
       e.data.mouse_scroll = a->event_state.mouse_scroll;
-      s.event_func(&e, &a->capacities, s.data);
+      s.event_func(&e, &a->frame_info, &a->capacities, s.data);
       a->event_state.mouse_scroll.x = 0;
       a->event_state.mouse_scroll.y = 0;
     }
@@ -218,6 +222,7 @@ void angine_run(AngineConfig *config) {
   a->capacities.window_height = cap_window_height;
   a->capacities.window_width = cap_window_width;
   a->capacities.batch_texture_create = cap_batch_create;
+  a->capacities.window_title = cap_window_title;
   
   float last = window_get_time();
   

@@ -14,6 +14,11 @@ Image *image_create(int width, int height, image_format_ format) {
   return i;
 }
 
+Image *image_create_from_data(void *data, int width, int height, image_format_ format) {
+  Image *i = image_create(width, height, format);
+  memcpy(i->pixels, data, width * height * format);
+}
+
 Image *image_create_from_file(const char *path) {
   Image *i = malloc(sizeof(Image));
   i->pixels = stbi_load(path, &i->width, &i->height, &i->nb_channel, 0);

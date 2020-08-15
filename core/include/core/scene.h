@@ -16,6 +16,7 @@ typedef struct {
   float (*window_height)(void);
   float (*window_width)(void);
   TextureBatch *(*batch_texture_create)(void);
+  void (*window_title)(const char *);
 } Capacities;
 
 typedef enum {
@@ -26,19 +27,18 @@ typedef enum {
 
 typedef struct {
   EventType type;
+  Modifiers mods;
   union data_t {
-    float new_window_width;
-    float new_window_height;
+    Vec new_window_size;
     Vec mouse_position;
     Vec mouse_scroll;
-    Modifiers mods;
     MouseButton button;
     Key key;
   } data;
 } EventData;
 
 typedef void (*LoopFunc)(FrameInfo *info, Capacities *capacities, void *scene_data);
-typedef void (*EventFunc)(EventData *data, Capacities *capacities, void *scene_data);
+typedef void (*EventFunc)(EventData *data, FrameInfo *info, Capacities *capacities, void *scene_data);
 typedef void (*InitFunc)(void *scene_data, Capacities *capacities);
 typedef void (*EndFunc)(void *scene_data);
 
