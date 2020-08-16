@@ -16,6 +16,11 @@ typedef struct {
   Vec origin;
 } Transform;
 
+typedef struct {
+  Vec position;
+  Vec size;
+} Rect;
+
 Transform transform_default();
 
 bool vec_eq(Vec v1, Vec v2);

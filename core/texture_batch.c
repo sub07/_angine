@@ -2,7 +2,14 @@
 #include "texture_batch.h"
 #include "mesh.h"
 #include "texture.h"
+#include "font.h"
 #include <stdlib.h>
+#include <string.h>
+
+enum Operation {
+  OpText,
+  OpTexture
+};
 
 typedef struct TextureBatch {
   Mesh *mesh;
@@ -10,10 +17,12 @@ typedef struct TextureBatch {
   Handle vao;
   bool drawing;
   Texture *last_texture_used;
-  Shader shader;
+  Shader texture_shader;
+  Shader text_shader;
   Color colors[4];
   bool use_alpha_blending;
   int texture_counter;
+  enum Operation current_operation;
 } TextureBatch;
 
 const int nb_component_texture = 3;
@@ -38,10 +47,12 @@ int sizes[] = {
     color_size
 };
 
-TextureBatch *batch_create(Shader s) {
+TextureBatch *batch_create(Shader texture_shader, Shader text_shader) {
   TextureBatch *t = malloc(sizeof(TextureBatch));
-  t->shader = s;
+  t->texture_shader = texture_shader;
+  t->text_shader = text_shader;
   t->last_texture_used = null;
+  t->current_operation = OpTexture;
   int nb_texture = 1000;
   t->mesh = mesh_create(nb_texture * nb_float_per_texture_point * 4);
   t->use_alpha_blending = false;
@@ -77,7 +88,7 @@ void batch_begin(TextureBatch *batch) {
 void flush(TextureBatch *b) {
   if (b->texture_counter == 0) return;
   bind_texture_unit(texture_handle(b->last_texture_used), 0);
-  use_shader(b->shader);
+  use_shader(b->current_operation == OpTexture ? b->texture_shader : b->text_shader);
   bind_vao(b->vao);
   bind_as_indices_buffer(b->ibo);
   mesh_submit_gpu(b->mesh);
@@ -110,20 +121,25 @@ void batch_set_color(TextureBatch *batch, Color new_color) {
   batch->colors[3] = new_color;
 }
 
-void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
+void batch_texture_private(TextureBatch *b, Texture *tex, Transform *transform, Rect *sub_tex) {
   if (tex == null) return;
+  
   if (tex != b->last_texture_used) {
     flush(b);
     b->last_texture_used = tex;
   }
+  
   b->texture_counter++;
   int size = 4 * nb_float_per_texture_point;
   float vertices[size];
   
+  float w = sub_tex == null ? tex->width : sub_tex->size.x;
+  float h = sub_tex == null ? tex->height : sub_tex->size.y;
+  
   Vec p1 = {0, 0};
-  Vec p2 = {tex->width, 0};
-  Vec p3 = {0, tex->height};
-  Vec p4 = {tex->width, tex->height};
+  Vec p2 = {w, 0};
+  Vec p3 = {0, h};
+  Vec p4 = {w, h};
   
   p1 = vec_sub(p1, transform->origin);
   p2 = vec_sub(p2, transform->origin);
@@ -145,10 +161,15 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
   p3 = vec_add(p3, transform->translate);
   p4 = vec_add(p4, transform->translate);
   
+  float start_u = sub_tex == null ? 0 : sub_tex->position.x / tex->width;
+  float end_u = sub_tex == null ? 1 : (sub_tex->position.x + sub_tex->size.x) / tex->width;
+  float start_v = sub_tex == null ? 0 : sub_tex->position.y / tex->height;
+  float end_v = sub_tex == null ? 1 : (sub_tex->position.y + sub_tex->size.y) / tex->height;
+  
   vertices[0] = p1.x;
   vertices[1] = p1.y;
-  vertices[2] = 0;
-  vertices[3] = 0;
+  vertices[2] = start_u;
+  vertices[3] = start_v;
   vertices[4] = b->colors[0].r;
   vertices[5] = b->colors[0].g;
   vertices[6] = b->colors[0].b;
@@ -156,8 +177,8 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
   
   vertices[8] = p2.x;
   vertices[9] = p2.y;
-  vertices[10] = 1;
-  vertices[11] = 0;
+  vertices[10] = end_u;
+  vertices[11] = start_v;
   vertices[12] = b->colors[1].r;
   vertices[13] = b->colors[1].g;
   vertices[14] = b->colors[1].b;
@@ -165,8 +186,8 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
   
   vertices[16] = p3.x;
   vertices[17] = p3.y;
-  vertices[18] = 0;
-  vertices[19] = 1;
+  vertices[18] = start_u;
+  vertices[19] = end_v;
   vertices[20] = b->colors[2].r;
   vertices[21] = b->colors[2].g;
   vertices[22] = b->colors[2].b;
@@ -174,8 +195,8 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
   
   vertices[24] = p4.x;
   vertices[25] = p4.y;
-  vertices[26] = 1;
-  vertices[27] = 1;
+  vertices[26] = end_u;
+  vertices[27] = end_v;
   vertices[28] = b->colors[3].r;
   vertices[29] = b->colors[3].g;
   vertices[30] = b->colors[3].b;
@@ -184,8 +205,32 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform) {
   mesh_add(b->mesh, vertices, size);
 }
 
-void batch_font(TextureBatch *b, Font *font, Transform *transform) {
+void batch_texture(TextureBatch *b, Texture *tex, Transform *transform, Rect *sub_texture) {
+  if (b->current_operation != OpTexture) {
+    flush(b);
+    b->current_operation = OpTexture;
+  }
+  batch_texture_private(b, tex, transform, sub_texture);
+}
 
+void batch_string(TextureBatch *b, Font *font, const char *s, Transform transform) {
+  if (b->current_operation != OpText) {
+    flush(b);
+    b->current_operation = OpText;
+  }
+  float bottom;
+  Vec string_size = font_string_size_bottom(font, s, &bottom);
+  size_t len = strlen(s);
+  Vec origin = transform.origin;
+  for (size_t i = 0; i < len; i++) {
+    Glyph g = font->glyphs[s[i]];
+    Transform t = transform;
+    t.origin = origin;
+    t.origin.x -= g.offset.x;
+    t.origin.y -= string_size.y - g.offset.y + bottom;
+    batch_texture_private(b, font->texture_atlas, &t, &g.sub_texture);
+    origin = vec_sub(origin, g.advance);
+  }
 }
 
 void batch_enable_alpha_blending(TextureBatch *b) {

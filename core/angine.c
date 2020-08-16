@@ -78,6 +78,8 @@ void window_resize_callback(void *p, float w, float h) {
   set_viewport((int) w, (int) h);
   use_shader(a->shaders.texture_batch_shader);
   send_vec2_shader(a->shaders.texture_batch_shader, "viewportSize", w, h);
+  use_shader(a->shaders.texture_batch_text_shader);
+  send_vec2_shader(a->shaders.texture_batch_text_shader, "viewportSize", w, h);
 }
 
 void event_state_init(Angine *a) {
@@ -99,6 +101,11 @@ void init_shaders(Angine *a) {
   a->shaders = shader_collection_create();
   use_shader(a->shaders.texture_batch_shader);
   send_vec2_shader(a->shaders.texture_batch_shader,
+                   "viewportSize",
+                   window_get_width(a->window),
+                   window_get_height(a->window));
+  use_shader(a->shaders.texture_batch_text_shader);
+  send_vec2_shader(a->shaders.texture_batch_text_shader,
                    "viewportSize",
                    window_get_width(a->window),
                    window_get_height(a->window));
@@ -146,7 +153,7 @@ float cap_window_height() {
 }
 
 TextureBatch *cap_batch_create() {
-  return batch_create(instance->shaders.texture_batch_shader);
+  return batch_create(instance->shaders.texture_batch_shader, instance->shaders.texture_batch_text_shader);
 }
 
 void cap_window_title(const char *title) {

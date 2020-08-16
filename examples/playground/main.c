@@ -9,6 +9,7 @@ typedef struct {
   TextureBatch *batch;
   int c;
   Font *courier;
+  float x;
 } data;
 
 void scene_init(data *d, Capacities *c) {
@@ -16,32 +17,19 @@ void scene_init(data *d, Capacities *c) {
   d->tex = texture_create_img(i);
   image_free(i);
   d->batch = c->batch_texture_create();
+  batch_enable_alpha_blending(d->batch);
   d->tex_transform = transform_default();
-//  batch_set_colors(d->batch, color_red, color_transparent, color_blue, color_gray);
   d->c = 1;
-  d->courier = font_create("assets/courier.ttf", 20);
+  d->courier = font_create("assets/courier.ttf", 25);
 }
-
-typedef struct {
-  Texture *t;
-} hack;
 
 void scene_loop(FrameInfo *info, Capacities *c, data *d) {
   char fps_string[50];
-  sprintf(fps_string, "%d %d", (int) info->fps, d->c * d->c);
+  sprintf(fps_string, "%d", (int) info->fps);
   c->window_title(fps_string);
-  hack *h = (hack *) d->courier;
   batch_begin(d->batch);
-  for (int x = 0; x < d->c; x++) {
-    for (int y = 0; y < d->c; y++) {
-      d->tex_transform.translate.x = (float) x * 16 + 50;
-      d->tex_transform.translate.y = (float) y * 16 + 50;
-      batch_texture(d->batch, d->tex, &d->tex_transform);
-    }
-  }
-  Transform def = transform_default();
-  def.translate.x = -500;
-  batch_texture(d->batch, h->t, &def);
+  batch_set_color(d->batch, color_black);
+  batch_string(d->batch, d->courier, "(Test_oui)", d->tex_transform);
   batch_end(d->batch);
 }
 
@@ -68,6 +56,7 @@ void scene_event(EventData *event, FrameInfo *info, Capacities *capacities, data
       d->tex_transform.origin.x -= 0.1f;
     } else if (k == Right) {
       d->tex_transform.origin.x += 0.1f;
+      d->x += 5;
     }
   }
   
@@ -81,14 +70,6 @@ void scene_event(EventData *event, FrameInfo *info, Capacities *capacities, data
   
   if (event->type == OnMouseMove) {
     d->tex_transform.translate = event->data.mouse_position;
-  }
-  
-  if (event->type == OnMouseDown) {
-    batch_enable_alpha_blending(d->batch);
-  }
-  
-  if (event->type == OnMouseUp) {
-    batch_disable_alpha_blending(d->batch);
   }
 }
 

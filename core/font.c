@@ -2,16 +2,9 @@
 #include <stdlib.h>
 #include <core/texture.h>
 #include "font.h"
-#include <ft2build.h>
 #include <freetype/freetype.h>
 #include <utils/log.h>
-
-#define nb_char 591
-
-typedef struct Font {
-  Texture *texture_atlas;
-  Glyph glyphs[nb_char];
-} Font;
+#include <float.h>
 
 Font *font_create(const char *path, int font_size) {
   Font *f = malloc(sizeof(Font));
@@ -23,16 +16,13 @@ Font *font_create(const char *path, int font_size) {
   
   u32 total_width = 0;
   u32 max_height = 0;
-  int top = INT32_MIN;
-  int bottom = INT32_MAX;
+  
   for (int c = 0; c < nb_char; c++) {
     if (FT_Load_Char(face, c, FT_LOAD_RENDER)) { log_abort("Unable to load char %c (%d)", c, c); }
-    u32 w = face->glyph->bitmap.width;
     u32 h = face->glyph->bitmap.rows;
-    total_width += w;
-    if (h > max_height) max_height = h;
-    if (face->glyph->bitmap_top > top) top = face->glyph->bitmap_top;
-    if (face->glyph->bitmap_top - h < bottom) bottom = face->glyph->bitmap_top - h;
+    total_width += face->glyph->bitmap.width;
+    if (max_height < h) max_height = h;
+    
   }
   
   Image *atlas_builder = image_create(total_width, max_height, R8);
@@ -44,10 +34,10 @@ Font *font_create(const char *path, int font_size) {
     u32 h = face->glyph->bitmap.rows;
     u8 *buffer = face->glyph->bitmap.buffer;
     Glyph g;
-    g.x = (float) x;
-    g.y = 0;
-    g.w = (float) w;
-    g.h = (float) h;
+    g.sub_texture.position.x = (float) x;
+    g.sub_texture.position.y = 0;
+    g.sub_texture.size.x = (float) w;
+    g.sub_texture.size.y = (float) h;
     g.offset.x = face->glyph->bitmap_left;
     g.offset.y = face->glyph->bitmap_top;
     g.advance.x = (float) face->glyph->advance.x / 64;
@@ -55,7 +45,7 @@ Font *font_create(const char *path, int font_size) {
     f->glyphs[c] = g;
     if (buffer != null) {
       Image glyph_img = {buffer, w, h, R8};
-      image_draw_image(atlas_builder, &glyph_img, x, (int) max_height - ((int) g.offset.y + bottom));
+      image_draw_image(atlas_builder, &glyph_img, x, 0);
     }
     x += w;
   }
@@ -66,6 +56,27 @@ Font *font_create(const char *path, int font_size) {
   f->texture_atlas = texture_create_img(atlas_builder);
   image_free(atlas_builder);
   return f;
+}
+
+Vec font_string_size(Font *font, const char *s) {
+  return font_string_size_bottom(font, s, null);
+}
+
+Vec font_string_size_bottom(Font *font, const char *s, float *bottom_out) {
+  float w = 0;
+  float top = 0;
+  float bottom = 0;
+  size_t len = strlen(s);
+  for (size_t i = 0; i < len; i++) {
+    Glyph g = font->glyphs[s[i]];
+    w += g.advance.x;
+    if (g.offset.y > top) top = g.offset.y;
+    if (g.offset.y - g.sub_texture.size.y < bottom) bottom = g.offset.y - g.sub_texture.size.y;
+  }
+  
+  if (bottom_out != null) *bottom_out = bottom;
+  
+  return (Vec) {w, top - bottom};
 }
 
 void font_free(Font *font) {
