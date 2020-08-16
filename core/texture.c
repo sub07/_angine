@@ -16,8 +16,15 @@ Texture *texture_create(void *data, int width, int height, int nb_channel) {
   return (Texture *) t;
 }
 
-Texture *texture_create_img(Image *image) {
+Texture *texture_create_from_img(Image *image) {
   return texture_create(image->pixels, image->width, image->height, image->nb_channel);
+}
+
+Texture *texture_create_from_file(const char *path) {
+  Image *i = image_create_from_file(path);
+  Texture *t = texture_create_from_img(i);
+  image_free(i);
+  return t;
 }
 
 void texture_bind(Texture *texture) {

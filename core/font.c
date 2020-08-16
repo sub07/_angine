@@ -53,7 +53,7 @@ Font *font_create(const char *path, int font_size) {
   FT_Done_Face(face);
   FT_Done_FreeType(lib);
   
-  f->texture_atlas = texture_create_img(atlas_builder);
+  f->texture_atlas = texture_create_from_img(atlas_builder);
   image_free(atlas_builder);
   return f;
 }
@@ -62,6 +62,7 @@ Vec font_string_size(Font *font, const char *s) {
   return font_string_size_bottom(font, s, null);
 }
 
+// TODO memoization
 Vec font_string_size_bottom(Font *font, const char *s, float *bottom_out) {
   float w = 0;
   float top = 0;

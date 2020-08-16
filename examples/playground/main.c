@@ -14,22 +14,21 @@ typedef struct {
 
 void scene_init(data *d, Capacities *c) {
   Image *i = image_create_from_file("assets/tex.png");
-  d->tex = texture_create_img(i);
+  d->tex = texture_create_from_img(i);
   image_free(i);
   d->batch = c->batch_texture_create();
   batch_enable_alpha_blending(d->batch);
   d->tex_transform = transform_default();
   d->c = 1;
   d->courier = font_create("assets/courier.ttf", 25);
+  batch_set_color(d->batch, color_black);
 }
 
 void scene_loop(FrameInfo *info, Capacities *c, data *d) {
   char fps_string[50];
   sprintf(fps_string, "%d", (int) info->fps);
-  c->window_title(fps_string);
   batch_begin(d->batch);
-  batch_set_color(d->batch, color_black);
-  batch_string(d->batch, d->courier, "(Test_oui)", d->tex_transform);
+  batch_string(d->batch, d->courier, fps_string, d->tex_transform);
   batch_end(d->batch);
 }
 

@@ -136,6 +136,7 @@ Angine *angine_create(AngineConfig *config, event_callbacks_t *callbacks) {
 
 void angine_free(Angine *a) {
   instance = null;
+  // TODO free shader, free texture_batches, and everything I forgot
   window_free(a->window);
   free(a);
 }

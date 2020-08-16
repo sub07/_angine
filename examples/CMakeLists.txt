@@ -4,3 +4,4 @@ function(copy_assets TARGET_NAME)
 endfunction()
 
 add_subdirectory(playground)
+add_subdirectory(snake)

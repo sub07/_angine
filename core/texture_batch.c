@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CHECK_DRAWING(b) { if (!(b)->drawing) { log_abort("You must call batch_begin() to start drawing"); } }
+
 enum Operation {
   OpText,
   OpTexture
@@ -122,6 +124,7 @@ void batch_set_color(TextureBatch *batch, Color new_color) {
 }
 
 void batch_texture_private(TextureBatch *b, Texture *tex, Transform *transform, Rect *sub_tex) {
+  CHECK_DRAWING(b)
   if (tex == null) return;
   
   if (tex != b->last_texture_used) {
@@ -206,6 +209,7 @@ void batch_texture_private(TextureBatch *b, Texture *tex, Transform *transform, 
 }
 
 void batch_texture(TextureBatch *b, Texture *tex, Transform *transform, Rect *sub_texture) {
+  CHECK_DRAWING(b)
   if (b->current_operation != OpTexture) {
     flush(b);
     b->current_operation = OpTexture;
@@ -214,6 +218,7 @@ void batch_texture(TextureBatch *b, Texture *tex, Transform *transform, Rect *su
 }
 
 void batch_string(TextureBatch *b, Font *font, const char *s, Transform transform) {
+  CHECK_DRAWING(b)
   if (b->current_operation != OpText) {
     flush(b);
     b->current_operation = OpText;
