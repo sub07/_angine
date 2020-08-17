@@ -15,6 +15,7 @@ enum Operation {
 
 typedef struct TextureBatch {
   Mesh *mesh;
+  bool use_alpha_blending;
   Handle ibo;
   Handle vao;
   bool drawing;
@@ -22,28 +23,27 @@ typedef struct TextureBatch {
   Shader texture_shader;
   Shader text_shader;
   Color colors[4];
-  bool use_alpha_blending;
   int texture_counter;
   enum Operation current_operation;
 } TextureBatch;
 
-const int nb_component_texture = 3;
-const int vertex_size = 2;
-const int texture_coord_size = 2;
-const int color_size = 4;
-const int nb_float_per_texture_point = vertex_size + texture_coord_size + color_size;
+static const int nb_component_vao = 3;
+static const int vertex_size = 2;
+static const int texture_coord_size = 2;
+static const int color_size = 4;
+static const int nb_float_per_texture_point = vertex_size + texture_coord_size + color_size;
 
-long offsets[] = {
+static long offsets[] = {
     0,
     vertex_size * (int) sizeof(float),
     (vertex_size + texture_coord_size) * (int) sizeof(float)
 };
-int strides[] = {
+static int strides[] = {
     nb_float_per_texture_point * (int) sizeof(float),
     nb_float_per_texture_point * (int) sizeof(float),
     nb_float_per_texture_point * (int) sizeof(float)
 };
-int sizes[] = {
+static int sizes[] = {
     vertex_size,
     texture_coord_size,
     color_size
@@ -55,13 +55,13 @@ TextureBatch *batch_create(Shader texture_shader, Shader text_shader) {
   t->text_shader = text_shader;
   t->last_texture_used = null;
   t->current_operation = OpTexture;
-  int nb_texture = 1000;
+  int nb_texture = 5000;
   t->mesh = mesh_create(nb_texture * nb_float_per_texture_point * 4);
   t->use_alpha_blending = false;
   t->drawing = false;
   t->texture_counter = 0;
   batch_set_color(t, color_white);
-  t->vao = create_vao(nb_component_texture, strides, offsets, sizes, mesh_vbo(t->mesh));
+  t->vao = create_vao(nb_component_vao, strides, offsets, sizes, mesh_gpu_buffer(t->mesh));
   u32 indices[nb_texture * 6];
   int index = 0;
   for (int i = 0; i < nb_texture * 4; i += 4) {
@@ -87,7 +87,7 @@ void batch_begin(TextureBatch *batch) {
   batch->drawing = true;
 }
 
-void flush(TextureBatch *b) {
+static void flush(TextureBatch *b) {
   if (b->texture_counter == 0) return;
   bind_texture_unit(texture_handle(b->last_texture_used), 0);
   use_shader(b->current_operation == OpTexture ? b->texture_shader : b->text_shader);
@@ -239,14 +239,14 @@ void batch_string(TextureBatch *b, Font *font, const char *s, Transform transfor
 }
 
 void batch_enable_alpha_blending(TextureBatch *b) {
-  if (b->drawing) {
+  if (b->drawing && !b->use_alpha_blending) {
     flush(b);
   }
   b->use_alpha_blending = true;
 }
 
 void batch_disable_alpha_blending(TextureBatch *b) {
-  if (b->drawing) {
+  if (b->drawing && b->use_alpha_blending) {
     flush(b);
   }
   b->use_alpha_blending = false;

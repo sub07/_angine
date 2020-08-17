@@ -12,4 +12,4 @@ void mesh_clear(Mesh *mesh);
 int mesh_size_remaining(Mesh *mesh);
 int mesh_size(Mesh *mesh);
 void mesh_add(Mesh *mesh, float *data, int size);
-Handle mesh_vbo(Mesh *mesh);
+Handle mesh_gpu_buffer(Mesh *mesh);

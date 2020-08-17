@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <string.h>
 #include "texture_batch.h"
+#include "polygon_batch.h"
 
 typedef struct {
   bool keys_state[NbKey];
@@ -76,10 +77,15 @@ void window_resize_callback(void *p, float w, float h) {
   e.data.new_window_size.y = h;
   a->scene.event_func(&e, &a->frame_info, &a->capacities, a->scene.data);
   set_viewport((int) w, (int) h);
+  
   use_shader(a->shaders.texture_batch_shader);
   send_vec2_shader(a->shaders.texture_batch_shader, "viewportSize", w, h);
+  
   use_shader(a->shaders.texture_batch_text_shader);
   send_vec2_shader(a->shaders.texture_batch_text_shader, "viewportSize", w, h);
+  
+  use_shader(a->shaders.polygon_batch_shader);
+  send_vec2_shader(a->shaders.polygon_batch_shader, "viewportSize", w, h);
 }
 
 void event_state_init(Angine *a) {
@@ -99,13 +105,21 @@ void event_state_init(Angine *a) {
 
 void init_shaders(Angine *a) {
   a->shaders = shader_collection_create();
+  
   use_shader(a->shaders.texture_batch_shader);
   send_vec2_shader(a->shaders.texture_batch_shader,
                    "viewportSize",
                    window_get_width(a->window),
                    window_get_height(a->window));
+  
   use_shader(a->shaders.texture_batch_text_shader);
   send_vec2_shader(a->shaders.texture_batch_text_shader,
+                   "viewportSize",
+                   window_get_width(a->window),
+                   window_get_height(a->window));
+  
+  use_shader(a->shaders.polygon_batch_shader);
+  send_vec2_shader(a->shaders.polygon_batch_shader,
                    "viewportSize",
                    window_get_width(a->window),
                    window_get_height(a->window));
@@ -136,7 +150,7 @@ Angine *angine_create(AngineConfig *config, event_callbacks_t *callbacks) {
 
 void angine_free(Angine *a) {
   instance = null;
-  // TODO free shader, free texture_batches, and everything I forgot
+  shader_collection_free(a->shaders);
   window_free(a->window);
   free(a);
 }
@@ -153,8 +167,12 @@ float cap_window_height() {
   return window_get_height(instance->window);
 }
 
-TextureBatch *cap_batch_create() {
+TextureBatch *cap_tex_batch_create() {
   return batch_create(instance->shaders.texture_batch_shader, instance->shaders.texture_batch_text_shader);
+}
+
+PolygonBatch *cap_polygon_batch_create() {
+  return p_batch_create(instance->shaders.polygon_batch_shader);
 }
 
 void cap_window_title(const char *title) {
@@ -229,8 +247,9 @@ void angine_run(AngineConfig *config) {
   a->capacities.close_program = cap_close_program;
   a->capacities.window_height = cap_window_height;
   a->capacities.window_width = cap_window_width;
-  a->capacities.batch_texture_create = cap_batch_create;
+  a->capacities.batch_texture_create = cap_tex_batch_create;
   a->capacities.window_title = cap_window_title;
+  a->capacities.batch_polygon_create = cap_polygon_batch_create;
   
   float last = window_get_time();
   

@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <maths/utils.h>
 #include <core/font.h>
+#include <core/polygon_batch.h>
 
 typedef struct {
   Texture *tex;
   Transform tex_transform;
   TextureBatch *batch;
+  PolygonBatch *p_batch;
   int c;
   Font *courier;
   float x;
@@ -17,19 +19,27 @@ void scene_init(data *d, Capacities *c) {
   d->tex = texture_create_from_img(i);
   image_free(i);
   d->batch = c->batch_texture_create();
+  d->p_batch = c->batch_polygon_create();
   batch_enable_alpha_blending(d->batch);
   d->tex_transform = transform_default();
   d->c = 1;
   d->courier = font_create("assets/courier.ttf", 25);
   batch_set_color(d->batch, color_black);
+  d->tex_transform.translate = (Vec) {80, 90};
 }
 
 void scene_loop(FrameInfo *info, Capacities *c, data *d) {
   char fps_string[50];
   sprintf(fps_string, "%d", (int) info->fps);
-  batch_begin(d->batch);
-  batch_string(d->batch, d->courier, fps_string, d->tex_transform);
-  batch_end(d->batch);
+  p_batch_begin(d->p_batch);
+  p_batch_draw_rect(d->p_batch, (Vec) {80, 60}, &d->tex_transform);
+  Transform t = d->tex_transform;
+  t.translate.x += 100;
+  p_batch_draw_rect(d->p_batch, (Vec) {80, 60}, &t);
+  p_batch_end(d->p_batch);
+//  batch_begin(d->batch);
+//  batch_string(d->batch, d->courier, fps_string, transform_default());
+//  batch_end(d->batch);
 }
 
 void scene_event(EventData *event, FrameInfo *info, Capacities *capacities, data *d) {
@@ -68,12 +78,14 @@ void scene_event(EventData *event, FrameInfo *info, Capacities *capacities, data
   }
   
   if (event->type == OnMouseMove) {
-    d->tex_transform.translate = event->data.mouse_position;
+//    d->tex_transform.translate = event->data.mouse_position;
   }
 }
 
 void scene_end(data *d) {
   font_free(d->courier);
+  batch_free(d->batch);
+  p_batch_free(d->p_batch);
   texture_free(d->tex);
 }
 

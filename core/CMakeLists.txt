@@ -18,7 +18,7 @@ add_library(core
         shader_sources.h
         shader_sources.c
         mesh.h
-        mesh.c include/core/texture_batch.h texture_batch.h texture_batch.c texture.h shader.c include/core/font.h font.c font.h)
+        mesh.c include/core/texture_batch.h texture_batch.h texture_batch.c texture.h shader.c include/core/font.h font.c font.h include/core/polygon_batch.h polygon_batch.h polygon_batch.c)
 
 target_include_directories(core PUBLIC include)
 target_link_libraries(core PRIVATE glfw graphics freetype)

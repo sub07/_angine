@@ -9,6 +9,7 @@ typedef Handle Shader;
 typedef struct {
   Shader texture_batch_shader;
   Shader texture_batch_text_shader;
+  Shader polygon_batch_shader;
 } ShaderCollection;
 
 ShaderCollection shader_collection_create();

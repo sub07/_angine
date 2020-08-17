@@ -4,6 +4,7 @@
 #include <utils/types.h>
 #include "key.h"
 #include "texture_batch.h"
+#include "polygon_batch.h"
 
 typedef struct {
   float dt;
@@ -16,6 +17,7 @@ typedef struct {
   float (*window_height)(void);
   float (*window_width)(void);
   TextureBatch *(*batch_texture_create)(void);
+  PolygonBatch *(*batch_polygon_create)(void);
   void (*window_title)(const char *);
 } Capacities;
 

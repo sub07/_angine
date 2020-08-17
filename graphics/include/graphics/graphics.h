@@ -53,7 +53,7 @@ void send_vec4_shader(Handle shader, const char *name, float r, float g,
 void delete_shader(Handle shader);
 
 // Draw
-enum draw_primitive { TriangleStrip, LineStrip, LineLoop, Triangles };
+enum draw_primitive { TriangleStrip, LineStrip, Lines, Triangles };
 
 void draw(enum draw_primitive primitive, int nb_vertices);
 void draw_indices(enum draw_primitive primitive, int nb_index);

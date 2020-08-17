@@ -6,12 +6,15 @@ ShaderCollection shader_collection_create() {
       shader_create(texture_batch_vertex_shader_source, texture_batch_fragment_shader_source, "texture_batch_shader"),
       shader_create(texture_batch_vertex_shader_source,
                     texture_batch_text_fragment_shader_source,
-                    "texture_batch_text_shader")
+                    "texture_batch_text_shader"),
+      shader_create(polygon_batch_vertex_shader_source, polygon_batch_fragment_shader_source, "polygon_batch_shader")
   };
 }
 
 void shader_collection_free(ShaderCollection s) {
   delete_shader(s.texture_batch_shader);
+  delete_shader(s.texture_batch_text_shader);
+  delete_shader(s.polygon_batch_shader);
 }
 
 Shader shader_create(const char *v, const char *f, const char *name) {

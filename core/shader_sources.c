@@ -36,3 +36,26 @@ char const *const texture_batch_text_fragment_shader_source =
     "void main() {\n"
     "finalPixelColor = vec4(1, 1, 1, texture(textureUnit, texPos).r) * tint;\n"
     "}\n";
+
+char const *const polygon_batch_vertex_shader_source =
+    "#version 460\n"
+    "layout(location = 0) in vec2 vertexPosition;\n"
+    "layout(location = 1) in vec4 color;\n"
+    "out vec4 col;\n"
+    "uniform vec2 viewportSize;\n"
+    "void main() {\n"
+    "vec2 workingVec = vertexPosition;\n"
+    "workingVec.x = workingVec.x * (2 / viewportSize.x) - 1;\n"
+    "workingVec.y = workingVec.y * -(2 / viewportSize.y) + 1;\n"
+    "gl_Position = vec4(workingVec, 0.0, 1.0);\n"
+    "col = color;\n"
+    "}\n";
+
+char const *const polygon_batch_fragment_shader_source =
+    "#version 460\n"
+    "in vec4 col;\n"
+    "out vec4 finalPixelColor;\n"
+    "void main() {\n"
+    "finalPixelColor = col;\n"
+    "}\n";
+

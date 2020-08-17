@@ -49,8 +49,8 @@ void mesh_add(Mesh *m, float *data, int size) {
   m->current_size += size;
 }
 
-Handle mesh_vbo(Mesh *m) {
-  return m->vbo;
+Handle mesh_gpu_buffer(Mesh *mesh) {
+  return mesh->vbo;
 }
 
 int mesh_size(Mesh *mesh) {

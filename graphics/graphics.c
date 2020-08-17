@@ -313,8 +313,8 @@ GLenum primitive_from_enum(enum draw_primitive p) {
     return GL_TRIANGLE_STRIP;
   case LineStrip:
     return GL_LINE_STRIP;
-  case LineLoop:
-    return GL_LINE_LOOP;
+  case Lines:
+    return GL_LINES;
   case Triangles:
     return GL_TRIANGLES;
   default:
